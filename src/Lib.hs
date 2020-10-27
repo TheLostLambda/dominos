@@ -3,6 +3,17 @@
   Brooks Rady, October 2020
 -}
 
+module Lib
+    ( dominos
+    , canPlay
+    , blocked
+    , played
+    , possPlays
+    , playDom
+    , scoreBoard
+    , scoreN
+    ) where
+
 import Data.Tuple (swap)
 
 -- Simple aliases
@@ -61,6 +72,8 @@ pips board L = if f == s then f + s else f
 pips board R = if f == s then f + s else s
   where (f,s) = last board
 
+scoreN = undefined
+
 -- FIXME: Maybe don't track the orientation, and just check the neighbour and
 -- determine which value they *don't* have in common. That's the one on the
 -- outside.
@@ -69,4 +82,3 @@ pips board R = if f == s then f + s else s
 getEnd :: End -> Board -> Int
 getEnd L = fst . head
 getEnd R = snd . last
-
