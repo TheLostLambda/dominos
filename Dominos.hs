@@ -11,13 +11,17 @@ type Domino = [Int] -- FIXME: (Int, Int)?
 type Hand = [Domino]
 
 -- A `Board` has two open ends and a list of the `Domino`s that have been played
-data Board = Board Int [Domino] Int
+data Board = Board { leftEnd :: Int, playedDoms :: [Domino], rightEnd :: Int }
 
--- Only two ends in our implementation
+-- Only two `End`s in our implementation
 data End = Left | Right
 
+-- Get the given `End` of a `Board`
+getEnd :: End -> Board -> Int
+getEnd Left = leftEnd
+getEnd Right = rightEnd
 
--- Can a given domino be played at a given end of the board?
+-- Can a given `Domino` be played at the given `End` of the `Board`?
 canPlay :: Board -> End -> Domino -> Bool
 canPlay board end = any (== getEnd board end)
 
@@ -25,24 +29,13 @@ canPlay board end = any (== getEnd board end)
 blocked :: Board -> Hand -> Bool
 blocked board hand = not $ or [canPlay board e d | e <- [Left, Right], d <- hand]
 
--- Has a given domino already been played?
+-- Has a given `Domino` already been played?
 played :: Board -> Domino -> Bool
-played (Board _ played _) = (`elem` played)
+played board = (`elem` playedDoms board)
 
 -- Attempt to play the given domino at one end of a board
 playDom :: Board -> End -> Domino -> Maybe Board
 playDom board end domino@[a,b]
-  | canPlay board end domino = Just $ atEnd play board end
+  | canPlay board end domino = Just $ board {}
   | otherwise = Nothing
-  where play e = if a == b then a + b else sum $ filter (/=e) domino
-          
--- FIXME: Boilerplate for days...
--- Run a function on the given end of a board
-atEnd :: (Int -> Int) -> Board -> End -> Board
-atEnd f (Board l p r) Left = Board (f l) p r
-atEnd f (Board l p r) Right = Board l p (f r)
-
--- Get the given end of a board
-getEnd :: Board -> End -> Int
-getEnd (Board l _ _) Left  = l
-getEnd (Board _ _ r) Right = r
+  where play = if a == b then a + b else sum $ filter (/=e) domino
