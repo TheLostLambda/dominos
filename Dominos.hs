@@ -3,8 +3,10 @@
   Brooks Rady, October 2020
 -}
 
+import Data.Tuple (swap)
+
 -- Simple aliases
-type Domino = [Int]  -- FIXME: Tuple maybe?, Implement Eq?
+type Domino = (Int, Int)
 type Hand = [Domino]
 type Board = [Domino]
 
@@ -13,17 +15,20 @@ data End = L | R
 
 -- Generate a list of all possible `Domino`s
 dominos :: [Domino]
-dominos = [[f,s] | f <- [0..6], s <- [f..6]]
+dominos = [(f,s) | f <- [0..6], s <- [f..6]]
 
 -- Has a given domino already been played?
 played :: Board -> Domino -> Bool
-played board [f,s] = any (`elem` board) [[f,s], [s,f]]
+played board domino = any (sameDom domino) board
 
--- FIXME: Define a `sameDom` function?
+-- Determine if two differently oriented `Domino`s are really the same
+sameDom :: Domino -> Domino -> Bool
+sameDom x y = x `elem` [y, swap y]
 
 -- Can a given domino be played at a given end of the board?
 canPlay :: Board -> End -> Domino -> Bool
-canPlay board end = any (== getEnd end board)
+canPlay board end (f,s) = f == e || s == e
+  where e = getEnd end board
 
 -- Return a tuple of all possible plays on either end of the board
 possPlays :: Board -> Hand -> ([Domino], [Domino])
@@ -37,12 +42,12 @@ blocked board hand = null l && null r
 
 -- Attempt to play the given domino at one end of a board
 playDom :: Board -> End -> Domino -> Maybe Board
-playDom board end [f,s]
-  | canPlay board end [f,s] = Just $ play end
+playDom board end (f,s)
+  | canPlay board end (f,s) = Just $ play end
   | otherwise = Nothing
-  where play L = reverse newEnd : board
+  where play L = swap newEnd : board
         play R = board ++ [newEnd]
-        newEnd = if f == getEnd end board then [f,s] else [s,f]
+        newEnd = if f == getEnd end board then (f,s) else (s,f)
 
 scoreBoard :: Board -> Int
 scoreBoard board = factorCount 5 + factorCount 3
@@ -52,9 +57,9 @@ scoreBoard board = factorCount 5 + factorCount 3
            | otherwise = 0
 
 pips board L = if f == s then f + s else f
-  where [f,s] = head board
+  where (f,s) = head board
 pips board R = if f == s then f + s else s
-  where [f,s] = last board
+  where (f,s) = last board
 
 -- FIXME: Maybe don't track the orientation, and just check the neighbour and
 -- determine which value they *don't* have in common. That's the one on the
@@ -62,6 +67,6 @@ pips board R = if f == s then f + s else s
 
 -- Get the given `End` of the `Board`
 getEnd :: End -> Board -> Int
-getEnd L = head . head
-getEnd R = last . last
+getEnd L = fst . head
+getEnd R = snd . last
 
