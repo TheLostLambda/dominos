@@ -14,6 +14,7 @@ module Lib
     , scoreN
     ) where
 
+import Data.Maybe (catMaybes)
 import Data.Tuple (swap)
 
 -- Simple aliases
@@ -22,7 +23,7 @@ type Hand = [Domino]
 type Board = [Domino]
 
 -- Only two ends in our implementation
-data End = L | R
+data End = L | R deriving Eq
 
 -- Generate a list of all possible `Domino`s
 dominos :: [Domino]
@@ -60,6 +61,7 @@ playDom board end (f,s)
         play R = board ++ [newEnd]
         newEnd = if f == getEnd end board then (f,s) else (s,f)
 
+-- FIXME: This needs a proper look
 scoreBoard :: Board -> Int
 scoreBoard board = factorCount 5 + factorCount 3
    where total = pips board L + pips board R
@@ -67,12 +69,17 @@ scoreBoard board = factorCount 5 + factorCount 3
            | total `rem` fact == 0 = total `div` fact
            | otherwise = 0
 
+-- FIXME: This is awful
 pips board L = if f == s then f + s else f
   where (f,s) = head board
 pips board R = if f == s then f + s else s
   where (f,s) = last board
 
-scoreN = undefined
+-- FIXME: Very very very rough
+scoreN :: Board -> Int -> ([Domino], [Domino])
+scoreN board score = (scoredPlays L, scoredPlays R)
+  where scoredPlays end = [if end == L then head p else last p | p <- allPlays end, scoreBoard p == score]
+        allPlays end = catMaybes [playDom board end d | d <- dominos, not $ played board d]
 
 -- FIXME: Maybe don't track the orientation, and just check the neighbour and
 -- determine which value they *don't* have in common. That's the one on the
