@@ -12,7 +12,8 @@ module Game (
 ) where
 
 import Lib
-import System.Random (RandomGen, mkStdGen, randomR)
+import Data.List (sort)
+import System.Random (RandomGen, mkStdGen, randoms)
 
 {- Data Types ----------------------------------------------------------------}
 
@@ -27,13 +28,7 @@ hsdPlayer :: DomsPlayer
 hsdPlayer = undefined
 
 shuffleDoms :: RandomGen g => g -> [Domino]
-shuffleDoms = shuffle dominos
-  where
-    shuffle [] _ = []
-    shuffle doms rng = d : shuffle (hs ++ ts) nrng
-      where
-        (i, nrng) = randomR (0, length doms - 1) rng
-        (hs, d : ts) = splitAt i doms
+shuffleDoms rng  = map snd . sort $ zip (randoms rng :: [Int]) dominos
 
 playDomsRound :: DomsPlayer -> DomsPlayer -> Int -> (Int, Int)
 playDomsRound = undefined
