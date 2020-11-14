@@ -11,24 +11,28 @@ module Game (
     playDomsRound,
 ) where
 
-import Lib
 import Data.List (sort)
+import Lib
 import System.Random (RandomGen, mkStdGen, randoms)
 
 {- Data Types ----------------------------------------------------------------}
 
-type DomsPlayer = Board -> Hand -> (Domino, End)
+type DomsPlayer = Board -> Hand -> (End, Domino)
 
 {- Public API Functions ------------------------------------------------------}
 
 simplePlayer :: DomsPlayer
-simplePlayer = undefined
+simplePlayer board hand = head [(e, d) | d <- hand, e <- [L, R], canPlay board e d]
 
 hsdPlayer :: DomsPlayer
 hsdPlayer = undefined
 
 shuffleDoms :: RandomGen g => g -> [Domino]
-shuffleDoms rng  = map snd . sort $ zip (randoms rng :: [Int]) dominos
+shuffleDoms rng = map snd . sort $ zip (randoms rng :: [Int]) dominos
 
 playDomsRound :: DomsPlayer -> DomsPlayer -> Int -> (Int, Int)
-playDomsRound = undefined
+playDomsRound p1 p2 seed = undefined
+
+seed = 42
+playTurn b p = uncurry (playDom b) . p b -- Needs to return new board and hand
+(h1, h2) = splitAt 7 . take 14 . shuffleDoms $ mkStdGen seed
