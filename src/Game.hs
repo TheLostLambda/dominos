@@ -11,18 +11,19 @@ module Game (
     playDomsRound,
 ) where
 
-import Data.List (sort)
+import Data.List (delete, sort)
+import Debug.Trace
 import Lib
 import System.Random (RandomGen, mkStdGen, randoms)
 
 {- Data Types ----------------------------------------------------------------}
 
-type DomsPlayer = Board -> Hand -> (End, Domino)
+type DomsPlayer = Board -> Hand -> (Domino, End)
 
 {- Public API Functions ------------------------------------------------------}
 
 simplePlayer :: DomsPlayer
-simplePlayer board hand = head [(e, d) | d <- hand, e <- [L, R], canPlay board e d]
+simplePlayer board hand = head [(d, e) | d <- hand, e <- [L, R], canPlay board e d]
 
 hsdPlayer :: DomsPlayer
 hsdPlayer = undefined
@@ -30,9 +31,22 @@ hsdPlayer = undefined
 shuffleDoms :: RandomGen g => g -> [Domino]
 shuffleDoms rng = map snd . sort $ zip (randoms rng :: [Int]) dominos
 
+-- FIXME: God should smite me for this...
 playDomsRound :: DomsPlayer -> DomsPlayer -> Int -> (Int, Int)
-playDomsRound p1 p2 seed = undefined
+playDomsRound p1 p2 seed = snd $ foldl nextTurn (([], h1, h2), (0, 0)) turns
+  where
+    turns = take 6 $ cycle [p1, p2]
+    (h1, h2) = splitAt 3 . take 6 . shuffleDoms $ mkStdGen seed
+    nextTurn ((b, h1, h2), (s1, s2)) p = trace debug ((board, h2, hand), (s2, score))
+      where
+        score = if null h1 || null h2 then s1 else s1 + points
+        (board, hand, points) = playTurn p b h1
+        debug = "\n\nBoard: " ++ show board ++ "\nHand Played: " ++ show hand ++ "\nHand Other: " ++ show h2 ++ "\nScore: " ++ show score ++ "\nGame: " ++ show (score, s2)
 
-seed = 42
-playTurn b p = uncurry (playDom b) . p b -- Needs to return new board and hand
-(h1, h2) = splitAt 7 . take 14 . shuffleDoms $ mkStdGen seed
+playTurn :: DomsPlayer -> Board -> Hand -> (Board, Hand, Int)
+playTurn p b h
+    | blocked b h = (b, h, 0)
+    | otherwise = (board, delete d h, scoreBoard board)
+  where
+    Just board = playDom b e d
+    (d, e) = p b h
