@@ -12,7 +12,6 @@ module Game (
 ) where
 
 import Data.List (delete, sort)
-import Debug.Trace
 import Lib
 import System.Random (RandomGen, mkStdGen, randoms)
 
@@ -35,13 +34,14 @@ shuffleDoms rng = map snd . sort $ zip (randoms rng :: [Int]) dominos
 playDomsRound :: DomsPlayer -> DomsPlayer -> Int -> (Int, Int)
 playDomsRound p1 p2 seed = snd $ foldl nextTurn (([], h1, h2), (0, 0)) turns
   where
-    turns = take 6 $ cycle [p1, p2]
-    (h1, h2) = splitAt 3 . take 6 . shuffleDoms $ mkStdGen seed
-    nextTurn ((b, h1, h2), (s1, s2)) p = trace debug ((board, h2, hand), (s2, score))
+    turns = take 14 $ cycle [p1, p2]
+    (h1, h2) = splitAt 7 . take 14 . shuffleDoms $ mkStdGen seed
+    nextTurn ((b, h1, h2), (s1, s2)) p = ((board, h2, hand), (s2, score))
       where
         score = if null h1 || null h2 then s1 else s1 + points
         (board, hand, points) = playTurn p b h1
-        debug = "\n\nBoard: " ++ show board ++ "\nHand Played: " ++ show hand ++ "\nHand Other: " ++ show h2 ++ "\nScore: " ++ show score ++ "\nGame: " ++ show (score, s2)
+
+{- Private Helper Functions --------------------------------------------------}
 
 playTurn :: DomsPlayer -> Board -> Hand -> (Board, Hand, Int)
 playTurn p b h
