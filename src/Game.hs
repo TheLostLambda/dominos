@@ -18,6 +18,7 @@ import System.Random (RandomGen, mkStdGen, randoms)
 {- Data Types ----------------------------------------------------------------}
 
 type DomsPlayer = Board -> Hand -> (Domino, End)
+type Score = Int
 
 {- Public API Functions ------------------------------------------------------}
 
@@ -30,20 +31,18 @@ hsdPlayer = undefined
 shuffleDoms :: RandomGen g => g -> [Domino]
 shuffleDoms rng = map snd . sort $ zip (randoms rng :: [Int]) dominos
 
--- FIXME: God should smite me for this...
-playDomsRound :: DomsPlayer -> DomsPlayer -> Int -> (Int, Int)
+playDomsRound :: DomsPlayer -> DomsPlayer -> Int -> (Score, Score)
 playDomsRound p1 p2 seed = snd $ foldl nextTurn (([], h1, h2), (0, 0)) turns
   where
-    turns = take 14 $ cycle [p1, p2]
+    turns = take 28 $ cycle [p1, p2]
     (h1, h2) = splitAt 7 . take 14 . shuffleDoms $ mkStdGen seed
-    nextTurn ((b, h1, h2), (s1, s2)) p = ((board, h2, hand), (s2, score))
+    nextTurn ((b, h1, h2), (s1, s2)) p = ((board, h2, hand), (s2, s1 + score))
       where
-        score = if null h1 || null h2 then s1 else s1 + points
-        (board, hand, points) = playTurn p b h1
+        (board, hand, score) = playTurn p b h1
 
 {- Private Helper Functions --------------------------------------------------}
 
-playTurn :: DomsPlayer -> Board -> Hand -> (Board, Hand, Int)
+playTurn :: DomsPlayer -> Board -> Hand -> (Board, Hand, Score)
 playTurn p b h
     | blocked b h = (b, h, 0)
     | otherwise = (board, delete d h, scoreBoard board)

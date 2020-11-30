@@ -69,12 +69,10 @@ playDom board end (f, s)
 
 -- Perform fives-and-threes scoring by counting the number of factors
 scoreBoard :: Board -> Int
-scoreBoard board = factorCount 5 + factorCount 3
+scoreBoard [(f, s)] = factorCount 5 (f + s) + factorCount 3 (f + s)
+scoreBoard board = factorCount 5 total + factorCount 3 total
   where
     total = pips board L + pips board R
-    factorCount fact
-        | total `rem` fact == 0 = total `div` fact
-        | otherwise = 0
 
 -- Return all possible plays with a score of N
 scoreN :: Board -> Int -> ([Domino], [Domino])
@@ -101,3 +99,8 @@ pips board end = if f == s then f + s else f
     (f, s) = case end of
         L -> head board
         R -> swap $ last board
+
+factorCount :: Int -> Int -> Int
+factorCount fact total
+    | total `rem` fact == 0 = total `div` fact
+    | otherwise = 0
