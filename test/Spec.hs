@@ -1,9 +1,15 @@
 import Test.Hspec
 import Test.QuickCheck
 
+import AI
+import Control.Monad (when)
+import DomsMatch (DominoBoard (..), End (..), Player (..))
+import qualified DomsMatch as DM
 import Game
-import Lib
+import Lib hiding (End (..))
 import qualified Ref
+
+shouldTestPlayers = True
 
 main :: IO ()
 main = hspec $ do
@@ -26,3 +32,35 @@ main = hspec $ do
         it "matches the reference implementation" $
             property $
                 \rng -> playDomsRound simplePlayer simplePlayer rng == Ref.playDomsRound Ref.simplePlayer Ref.simplePlayer rng
+
+    describe "allPlays" $ do
+        let hand = [(4, 4), (3, 0), (3, 2), (5, 1), (1, 1), (6, 6), (2, 0), (4, 2), (4, 0)]
+        let board = Board (4, 1) (4, 1) [] -- Only (4,1) is on the board with no history
+        it "returns all possible plays (both the domino and the end)" $ do
+            allPlays (GS hand board undefined undefined) `shouldBe` [((4, 4), L), ((4, 2), L), ((4, 0), L), ((5, 1), R), ((1, 1), R)]
+
+    describe "scorePlay" $ do
+        let board = Board (4, 1) (4, 1) [] -- Only (4,1) is on the board with no history
+        let plays = [((4, 4), L), ((4, 2), L), ((4, 0), L), ((5, 1), R), ((1, 1), R)]
+        it "scores all possible plays" $ do
+            map (scorePlay $ GS undefined board undefined undefined) plays `shouldBe` [3, 1, 0, 3, 2]
+
+    describe "byScore" $ do
+        let hand = [(4, 4), (3, 0), (3, 2), (5, 1), (1, 1), (6, 6), (2, 0), (4, 2), (4, 0)]
+        let board = Board (4, 1) (4, 1) [] -- Only (4,1) is on the board with no history
+        it "returns possible plays and their score" $ do
+            byScore (GS hand board undefined undefined) undefined `shouldBe` [(3, ((4, 4), L)), (1, ((4, 2), L)), (0, ((4, 0), L)), (3, ((5, 1), R)), (2, ((1, 1), R))]
+
+    when shouldTestPlayers $ do
+        describe "randomPlayer" $ do
+            it "for two random players, the first to go usually wins" $
+                property $
+                    \rng -> let (f, s) = DM.domsMatch DM.randomPlayer DM.randomPlayer 200 rng in f > s
+
+        describe "highestPlayer" $ do
+            it "should win against the random player when going first" $
+                property $
+                    \rng -> let (f, s) = DM.domsMatch highestPlayer DM.randomPlayer 200 rng in f > s
+            it "and when going second" $
+                property $
+                    \rng -> let (f, s) = DM.domsMatch DM.randomPlayer highestPlayer 200 rng in f < s

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5e1b624e247e9355093e2c5a56514d9df3f52d649316d2ed00f9b5e5e224204d
+-- hash: 5ca3db3c37b26eea09d4368f7221dfd5ad5046105f131f9f3722c059b8172e03
 
 name:           Dominos
 version:        0.1.0.0
@@ -27,6 +27,8 @@ source-repository head
 
 library
   exposed-modules:
+      AI
+      DomsMatch
       Game
       Lib
   other-modules:
