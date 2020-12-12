@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5ca3db3c37b26eea09d4368f7221dfd5ad5046105f131f9f3722c059b8172e03
+-- hash: f5925df94fb3b46f879b3a9b85a0770bd2af9d4cad3652443f20d3f145c13ce1
 
 name:           Dominos
 version:        0.1.0.0
@@ -38,6 +38,7 @@ library
   build-depends:
       base >=4.7 && <5
     , hspec
+    , parallel
     , random
   default-language: Haskell2010
 
@@ -52,6 +53,7 @@ executable Dominos-exe
       Dominos
     , base >=4.7 && <5
     , hspec
+    , parallel
     , random
   default-language: Haskell2010
 
@@ -69,5 +71,6 @@ test-suite Dominos-test
     , QuickCheck
     , base >=4.7 && <5
     , hspec
+    , parallel
     , random
   default-language: Haskell2010

@@ -95,7 +95,11 @@ module DomsMatch where
           hand1 = take num_in_hand shuffled
           hand2 = take num_in_hand (drop num_in_hand shuffled)
           {- playDomsRound' recursively alternates between each player, keeping track of the game state
-             (each player's hand, the board, the scores) until both players are blocked -}
+             (each player's hand, the board, the scores) until both players are blocked
+             Credit to Brooks Rady to identifying the problem causing the unfair advantage to
+             player1, and proposing a solution -}
+          playDomsRound' _ _ _ (_, _, _, scores@(61,_)) = scores
+          playDomsRound' _ _ _ (_, _, _, scores@(_,61)) = scores
           playDomsRound' p1 p2 turn gameState@(hand1, hand2, board, (score1,score2))
             | p1_blocked && p2_blocked = (score1,score2)
             | turn == P1 && p1_blocked = playDomsRound' p1 p2 P2 gameState

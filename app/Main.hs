@@ -1,6 +1,7 @@
 module Main where
 
-import Lib
+import DomsMatch
+import AI
 
 main :: IO ()
 main = undefined

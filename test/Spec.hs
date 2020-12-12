@@ -45,22 +45,27 @@ main = hspec $ do
         it "scores all possible plays" $ do
             map (scorePlay $ GS undefined board undefined undefined) plays `shouldBe` [3, 1, 0, 3, 2]
 
-    describe "byScore" $ do
+    describe "highScoring" $ do
         let hand = [(4, 4), (3, 0), (3, 2), (5, 1), (1, 1), (6, 6), (2, 0), (4, 2), (4, 0)]
         let board = Board (4, 1) (4, 1) [] -- Only (4,1) is on the board with no history
-        it "returns possible plays and their score" $ do
-            byScore (GS hand board undefined undefined) undefined `shouldBe` [(3, ((4, 4), L)), (1, ((4, 2), L)), (0, ((4, 0), L)), (3, ((5, 1), R)), (2, ((1, 1), R))]
+        it "returns possible plays and their score" $
+            do
+                highScoring (GS hand board undefined undefined) [((4, 4), L), ((4, 2), L), ((4, 0), L), ((5, 1), R), ((1, 1), R)]
+                `shouldBe` [(((4, 4), L), 3), (((4, 2), L), 1), (((4, 0), L), 0), (((5, 1), R), 3), (((1, 1), R), 2)]
 
     when shouldTestPlayers $ do
-        describe "randomPlayer" $ do
-            it "for two random players, the first to go usually wins" $
-                property $
-                    \rng -> let (f, s) = DM.domsMatch DM.randomPlayer DM.randomPlayer 200 rng in f > s
-
-        describe "highestPlayer" $ do
+        describe "playerH" $ do
             it "should win against the random player when going first" $
                 property $
-                    \rng -> let (f, s) = DM.domsMatch highestPlayer DM.randomPlayer 200 rng in f > s
+                    \rng -> let (f, s) = DM.domsMatch playerH DM.randomPlayer 200 rng in f > s
             it "and when going second" $
                 property $
-                    \rng -> let (f, s) = DM.domsMatch DM.randomPlayer highestPlayer 200 rng in f < s
+                    \rng -> let (f, s) = DM.domsMatch DM.randomPlayer playerH 200 rng in f < s
+
+        describe "playerHFE" $ do
+            it "should win against playerH when going first" $
+                property $
+                    \rng -> let (f, s) = DM.domsMatch playerHFE playerH 300 rng in f > s
+            it "and when going second" $
+                property $
+                    \rng -> let (f, s) = DM.domsMatch playerH playerHFE 300 rng in f < s
