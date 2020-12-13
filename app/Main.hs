@@ -11,7 +11,18 @@ seed :: Int
 seed = 42
 
 games :: Int
-games = 10000
+games = 100000
+
+selectedPlayers :: [(String, DomsPlayer)]
+selectedPlayers =
+    [ ("Random", randomPlayer)
+    , ("H", playerH)
+    , ("HF", playerHF)
+    , ("HFE", playerHFE)
+    , ("HFEB", playerHFEB)
+    , ("HFEBM", playerHFEBM)
+    , ("HFEBMS", playerHFEBMS)
+    ]
 
 tactics :: [(String, [Tactic])]
 tactics =
@@ -23,9 +34,12 @@ tactics =
     , ("S", [smartDanger])
     ]
 
+allPossiblePlayers :: [(String, DomsPlayer)]
+allPossiblePlayers = [(n, strategy ts) | (n, ts) <- map fold $ subsets tactics]
+
 main :: IO ()
 main = do
-    let players = [(n, strategy ts) | (n, ts) <- map fold $ subsets tactics]
+    let players = selectedPlayers
         matchups = [(p1n, p2n, domsMatch p1 p2 games seed) | (p1n, p1) <- players, (p2n, p2) <- players] `using` parList rdeepseq
     dumpTXT matchups
     dumpCSV matchups

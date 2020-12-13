@@ -4,16 +4,13 @@
   Brooks Rady, December 2020
 -}
 
-module AI where -- FIXME: Might rename this module
-
--- Thick Mark: foldr1 (\(a,b) (x,y) -> (a+x, b+y)) $ parMap rdeepseq (domsMatch playerHFED playerHFE 625) [1..16]
+module AI where
 
 -- FIXME: More list comps, less map and filter
 
 import Data.List
 import Data.Ord
 import Data.Tuple
-import Debug.Trace
 import DomsMatch
 
 {- Data Types ----------------------------------------------------------------}
