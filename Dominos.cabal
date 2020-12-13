@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f5925df94fb3b46f879b3a9b85a0770bd2af9d4cad3652443f20d3f145c13ce1
+-- hash: 4246657dbb0131c3374ca7083eac9585c3493f29ee71eb193d455fa81ef0b466
 
 name:           Dominos
 version:        0.1.0.0
@@ -48,7 +48,7 @@ executable Dominos-exe
       Paths_Dominos
   hs-source-dirs:
       app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -O2 -Wall
   build-depends:
       Dominos
     , base >=4.7 && <5

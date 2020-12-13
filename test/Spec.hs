@@ -37,13 +37,13 @@ main = hspec $ do
         let hand = [(4, 4), (3, 0), (3, 2), (5, 1), (1, 1), (6, 6), (2, 0), (4, 2), (4, 0)]
         let board = Board (4, 1) (4, 1) [] -- Only (4,1) is on the board with no history
         it "returns all possible plays (both the domino and the end)" $ do
-            allPlays (GS hand board undefined undefined) `shouldBe` [((4, 4), L), ((4, 2), L), ((4, 0), L), ((5, 1), R), ((1, 1), R)]
+            allPlays board hand `shouldBe` [((4, 4), L), ((4, 2), L), ((4, 0), L), ((5, 1), R), ((1, 1), R)]
 
     describe "scorePlay" $ do
         let board = Board (4, 1) (4, 1) [] -- Only (4,1) is on the board with no history
         let plays = [((4, 4), L), ((4, 2), L), ((4, 0), L), ((5, 1), R), ((1, 1), R)]
         it "scores all possible plays" $ do
-            map (scorePlay $ GS undefined board undefined undefined) plays `shouldBe` [3, 1, 0, 3, 2]
+            map (scorePlay board) plays `shouldBe` [3, 1, 0, 3, 2]
 
     describe "highScoring" $ do
         let hand = [(4, 4), (3, 0), (3, 2), (5, 1), (1, 1), (6, 6), (2, 0), (4, 2), (4, 0)]
