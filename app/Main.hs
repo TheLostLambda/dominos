@@ -39,16 +39,21 @@ allPossiblePlayers = [(n, strategy ts) | (n, ts) <- map fold $ subsets tactics]
 
 main :: IO ()
 main = do
-    let players = selectedPlayers
+    putStrLn . show $ playTwo playerHES playerHFEBMS
+    {- let players = selectedPlayers
         matchups = [(p1n, p2n, domsMatch p1 p2 games seed) | (p1n, p1) <- players, (p2n, p2) <- players] `using` parList rdeepseq
     dumpTXT matchups
-    dumpCSV matchups
+    dumpCSV matchups -}
 
 dumpTXT :: [(String, String, Scores)] -> IO ()
 dumpTXT matches = do
     h <- openFile "results.txt" WriteMode
     mapM_ (\(p1, p2, r) -> hPutStrLn h $ p1 ++ " vs " ++ p2 ++ ": " ++ show r) matches
     hClose h
+
+playTwo :: DomsPlayer -> DomsPlayer -> Scores
+playTwo p1 p2 = foldr1 (\(a,b) (x,y) -> (a+x, b+y)) $
+    parMap rdeepseq (domsMatch p1 p2 (games `div` 16)) [1..16]
 
 dumpCSV :: [(String, String, Scores)] -> IO ()
 dumpCSV matches = do

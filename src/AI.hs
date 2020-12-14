@@ -42,6 +42,9 @@ playerHF = strategy [highScoring, firstDrop]
 playerHFE :: DomsPlayer
 playerHFE = strategy [highScoring, firstDrop, endGame]
 
+playerHES :: DomsPlayer
+playerHES = strategy [highScoring, endGame, smartDanger]
+
 -- Discourage dropping dangerous dominos – (6,6) and (5,5) – if they can't be knocked off
 playerHFEB :: DomsPlayer
 playerHFEB = strategy [highScoring, firstDrop, endGame, blindDanger]
