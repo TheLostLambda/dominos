@@ -1,12 +1,17 @@
 {-
   AI players for Fives-and-Threes Domino games
   Dominos Programming Assignment for COM2018
+
+  Players are ordered from least to most intelligent, so testing `playerH` against
+  `playerHFEBMS` should yield the biggest difference in performance and make for
+  the most interesting matchup.
+
   Brooks Rady, December 2020
 -}
 
 module AI where
 
-import Data.List (delete, foldl', group, intersect, maximumBy, sort, union, (\\))
+import Data.List (delete, group, intersect, maximumBy, sort, union, (\\))
 import Data.Ord (comparing)
 import DomsMatch
 
@@ -53,7 +58,7 @@ playerHFEBMS = strategy [highScoring, firstDrop, endGame, blindDanger, mostPips,
 
 -- Zip each play with the points it would score
 highScoring :: Tactic
-highScoring (GS _ board _ _) = map (\p -> (p, scorePlay board p))
+highScoring (GS _ board _ _) = zipFn (scorePlay board)
 
 -- If the board is empty, encourage dropping (5,4)
 -- NB: Adding 2 to the existing (5,4) score of 3, puts it above the score of any other first play
@@ -74,7 +79,7 @@ endGame gs@(GS _ board _ _) plays
 -- Discourage dropping "dangerous" dominos if they can't be knocked off
 -- NB: The dangerous dominos – (6,6) and (5,5) – and the penalty of -2 were determined empirically
 blindDanger :: Tactic
-blindDanger (GS hand _ _ _) = map (\p -> (p, -2)) . dangerPlays
+blindDanger (GS hand _ _ _) = zipFn (const $ -2) . dangerPlays
   where
     -- Find plays with dangerous dominos and unowned pips
     dangerPlays = filter (\(d@(n, _), _) -> d `elem` dangerDoms && n `notElem` ownedPips)
@@ -91,7 +96,7 @@ mostPips (GS hand board _ _) plays =
 -- Given what the opponent could be holding, calculate the average risk of each play
 -- NB: Risk is a scaled average of all of the points an opponent could score in response to a play
 smartDanger :: Tactic
-smartDanger gs@(GS _ board player _) = map (\p -> (p, - dangerScore p))
+smartDanger gs@(GS _ board player _) = zipFn (negate . dangerScore)
   where
     oHand = otherHand gs -- All of the dominos that an opponent could have
     oHandOdds = otherHandSize gs // length oHand -- How likely they are to hold each of those
@@ -105,41 +110,55 @@ smartDanger gs@(GS _ board player _) = map (\p -> (p, - dangerScore p))
 
 {- Player Tactic Composition ---------------------------------------------------------------------}
 
--- FIXME: Lots, and maybe sortOn?
+-- The core of every domino player – composing individual tactics into an overall strategy
+-- Every play is individually assigned a score by the tactics, then `strategy` then accumulates
+-- those scores and returns the highest cumulatively-ranked play
 strategy :: [Tactic] -> DomsPlayer
 strategy tactics hand board player score =
-    fst . maximumBy (comparing snd) $ foldl' applyTactic initPlays tactics
+    fst . maximumBy (comparing snd) $ foldr applyTactic initPlays tactics
   where
-    gs = GS hand board player score
-    initPlays = map (\p -> (p, 0)) $ allPlays board hand
-    applyTactic plays tactic = mergePlays plays $ tactic gs (map fst plays)
+    gs = GS hand board player score -- This function also wraps its arguments into a GameState
+    initPlays = zipFn (const 0) $ allPlays board hand -- Initially assign all plays a rank of zero
+    applyTactic tactic plays = mergePlays plays $ tactic gs (map fst plays)
 
+-- Merges two play lists; if the same play exists in both lists, sum their point score
 mergePlays :: [(Play, Points)] -> [(Play, Points)] -> [(Play, Points)]
-mergePlays = foldl' insertPlay
+mergePlays = foldr insertPlay
   where
-    insertPlay plays new@(d, p) =
-        maybe new (\x -> (d, p + x)) (lookup d plays) : filter (\(x, _) -> x /= d) plays
+    insertPlay new@(p, s) plays =
+        maybe new (\x -> (p, s + x)) (lookup p plays) : filter (\(x, _) -> x /= p) plays
 
 {- Opponent Prediction ---------------------------------------------------------------------------}
 
+-- Look at the game state and calculate the number of dominos the opponent is holding
 otherHandSize :: GameState -> Int
-otherHandSize (GS _ InitBoard _ _) = num_in_hand
+otherHandSize (GS _ InitBoard _ _) = num_in_hand -- Default to the starting hand size
+-- Otherwise, subtract the number of dominos that the opponent has played on the board
 otherHandSize (GS _ (Board _ _ history) player _) =
     num_in_hand - length [p | (_, p, _) <- history, p /= player]
 
--- FIXME: Yuck
+-- Return a complete list of the dominos that could be in the opponent's hand, narrowed down by
+-- what is in the current players hand, what's on the board, and what the opponent has knocked on
 otherHand :: GameState -> [Domino]
-otherHand (GS hand InitBoard _ _) = domSet \\ hand
+otherHand (GS hand InitBoard _ _) = domSet \\ hand -- Here, we only know it's not one of ours
 otherHand (GS hand board@(Board _ _ history) player _) = filter (not . hasKnockingPip) unknownDoms
   where
+    -- Dominos not on the board or in our hand could belong to the opponent
     unknownDoms = filter (not . flip played board) $ domSet \\ hand
+    -- Checks if a domino contains a pip that the opponent has previously knocked on
     hasKnockingPip d = any (d `hasPip`) $ knockingPips history player
+    -- Works backwards through the play history, looking for where the current player has gone
+    -- twice in a row (i.e. where the opponent is knocking), recording the exposed pips knocked on
     knockingPips [] _ = []
     knockingPips hist pl
-        | pl == player && pl == lastPl = knockingPips (delete lastPlay hist) lastPl `union` endPips hist
-        | otherwise = knockingPips (delete lastPlay hist) lastPl
+        -- Check if the current player went the turn before this one, adding knocking pips if so
+        | pl == player && pl == lastPl = pastKnocks `union` endPips hist
+        | otherwise = pastKnocks
       where
+        -- Get the last play by finding the entry with the highest `MoveNum`
         lastPlay@(_, lastPl, _) = maximumBy (comparing $ \(_, _, x) -> x) hist
+        -- Step backwards in time and recurse
+        pastKnocks = knockingPips (delete lastPlay hist) lastPl
 
 {- Domino Helper Functions -----------------------------------------------------------------------}
 
@@ -191,3 +210,7 @@ x // y = fromIntegral x / fromIntegral y
 mean :: (Integral a, Fractional b) => [a] -> b
 mean [] = 0.0
 mean lst = sum lst // length lst
+
+-- Apply a function to every item in a list, zipping the original and result values
+zipFn :: (a -> b) -> [a] -> [(a, b)]
+zipFn f = map (\x -> (x, f x))
