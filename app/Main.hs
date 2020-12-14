@@ -11,7 +11,7 @@ seed :: Int
 seed = 42
 
 games :: Int
-games = 10000
+games = 1000000
 
 selectedPlayers :: [(String, DomsPlayer)]
 selectedPlayers =

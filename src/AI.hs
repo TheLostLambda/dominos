@@ -91,7 +91,7 @@ blindDanger (GS hand _ _ _) = zipFn (const $ -2) . dangerPlays
 -- NB: "Controlled" pips are those that the player owns the majority of (more than 4)
 mostPips :: Tactic
 mostPips (GS hand board _ _) plays =
-    [(pl, c - 4) | (c, p) <- countPips hand, c > 4, pl <- plays, p `elem` newEnds' board pl]
+    [(pl, c - 4) | (c, p) <- countPips hand, c > 4, pl <- plays, p `elem` newEnds board pl]
 
 -- Given what the opponent could be holding, calculate the average risk of each play
 -- NB: Risk is a scaled average of all of the points an opponent could score in response to a play
@@ -139,7 +139,7 @@ otherHandSize (GS _ (Board _ _ history) player _) =
 
 -- Return a complete list of the dominos that could be in the opponent's hand, narrowed down by
 -- what is in the current players hand, what's on the board, and what the opponent has knocked on
-otherHand :: GameState -> [Domino]
+otherHand :: GameState -> Hand
 otherHand (GS hand InitBoard _ _) = domSet \\ hand -- Here, we only know it's not one of ours
 otherHand (GS hand board@(Board _ _ history) player _) = filter (not . hasKnockingPip) unknownDoms
   where
@@ -180,8 +180,8 @@ scorePlay board (domino, end) = scoreBoard possBoard
     Just possBoard = playDom P1 domino board end
 
 -- Simulate a play and return the new ends of the board
-newEnds' :: DominoBoard -> Play -> [Pip]
-newEnds' board (domino, end) = [l, r]
+newEnds :: DominoBoard -> Play -> [Pip]
+newEnds board (domino, end) = [l, r]
   where
     Just (Board (l, _) (_, r) _) = playDom P1 domino board end
 
