@@ -115,7 +115,7 @@ smartDanger gs@(GS _ board player _) = zipFn (negate . dangerScore)
 -- those scores and returns the highest cumulatively-ranked play
 strategy :: [Tactic] -> DomsPlayer
 strategy tactics hand board player score =
-    fst . maximumBy (comparing snd) $ foldr applyTactic initPlays tactics
+    pure . fst . maximumBy (comparing snd) $ foldr applyTactic initPlays tactics
   where
     gs = GS hand board player score -- This function also wraps its arguments into a GameState
     initPlays = zipFn (const 0) $ allPlays board hand -- Initially assign all plays a rank of zero

@@ -1,4 +1,6 @@
 # Dominos
+Should I replace `pure` with `return`?
+
 Danger, No Danger
 6 & 5; -2 : (5130,4870)
 6 & 5; -1 : (5106,4894)
