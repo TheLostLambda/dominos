@@ -1,10 +1,10 @@
 module Interactive where
 
 import AI
+import Data.Char
 import Data.Maybe
 import Data.Tuple (swap)
 import DomsMatch
-import Data.Char
 import Text.Read
 
 human :: DomsPlayer
