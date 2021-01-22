@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d2a21035a14db6c6beefc1048d7176a65c021b950f917303ce5c5832f53eada8
+-- hash: 985f286ddf418d0427cbdce6ce1b8edfc478d3e6a137aacb8f96d9d610058854
 
 name:           Dominos
 version:        0.1.0.0
@@ -30,6 +30,7 @@ library
       AI
       DomsMatch
       Game
+      Interactive
       Lib
   other-modules:
       Paths_Dominos
@@ -57,7 +58,7 @@ executable benchmark
     , random
   default-language: Haskell2010
 
-executable dominoes
+executable dominos
   main-is: Main.hs
   other-modules:
       Paths_Dominos

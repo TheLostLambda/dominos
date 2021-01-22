@@ -40,7 +40,7 @@ executables:
     - -Wall
     dependencies:
     - Dominos
-  dominoes:
+  dominos:
     main:                Main.hs
     source-dirs:         app
     ghc-options:

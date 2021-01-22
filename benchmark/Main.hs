@@ -6,6 +6,7 @@ import Data.Foldable
 import Data.List
 import DomsMatch
 import System.IO
+import System.IO.Unsafe
 
 seed :: Int
 seed = 42
@@ -40,7 +41,8 @@ allPossiblePlayers = [(n, strategy ts) | (n, ts) <- map fold $ subsets tactics]
 main :: IO ()
 main = do
     let players = selectedPlayers
-        matchups = [(p1n, p2n, domsMatch p1 p2 games seed) | (p1n, p1) <- players, (p2n, p2) <- players] `using` parList rdeepseq
+        -- Ooo! I've always wanted to commit a cardinal sin!
+        matchups = [(p1n, p2n, unsafeDupablePerformIO $ domsMatch p1 p2 games seed) | (p1n, p1) <- players, (p2n, p2) <- players] `using` parList rdeepseq
     dumpTXT matchups
     dumpCSV matchups
 

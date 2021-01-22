@@ -88,3 +88,21 @@ flowchart TB
     otherHandSize-."Int".-> S
     otherHandSize(otherHandSize\n\n Calculate the number of dominos\n the opponent is holding)
 ```
+
+```mermaid
+flowchart TB
+    documentPlayer("documentPlayer :: DomsPlayer -> DomsPlayer\n\n A 'wrapper' player that takes an existing AI\n player and prints some information about\n its plays to the screen (so the human knows\n which moves have been played)")
+    
+    human("human :: DomsPlayer\n\n A `DomsPlayer` controlled by a human\n user. It prints information about the state\n of the game, then interactively asks for\n a move to play")
+    showGameState("showGameState\n\n Prints the score of the current player as\n well as the score of their opponent, and\n represents the Domino board in a\n user-friendly way")
+    human-- "DominoBoard\nPlayer\nScores" --> showGameState
+    showGameState-. "IO ()" .-> human
+
+    getPlay("getPlay\n\n Prints the player's current hand, with each\n domino given an index. It then reads two lines\n of input: the index of the domino to play,\n and the end (L or R) to play it on. The two\n inputs are returned as a tuple of `String`s")
+    human-- "Hand\nDominoBoard" --> getPlay
+    getPlay-. "IO (String, String)" .-> human
+
+    validateChoice("validateChoice\n\n Performs a number of sanity-checks on the\n provided user-input. Checks that the index\n is an `Int`, the end is a proper `End` (L or R),\n that the index isn't too small or too big, and\n that the requested play is actually legal. Returns\n either the fully validated play or an error message")
+    human-- "(String, String)\nHand\nDominoBoard" --> validateChoice
+    validateChoice-. "Either String (Domino, End)" .-> human
+```
