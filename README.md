@@ -1,4 +1,12 @@
 # Dominos
+
+## Coming Here From My CV?
+Thanks for checking things out! Here are a couple of things that you might be particularly interested in:
+- [The final report containing all of the AI testing restults](results/Report.pdf)
+- [A design diagram describing the high-level AI architecture](Design.png)
+- [The fully commented AI code (written in Haskell)](src/AI.hs)
+
+## Miscellaneous Notes
 Should I replace `pure` with `return`?
 
 Danger, No Danger
