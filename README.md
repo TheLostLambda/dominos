@@ -6,6 +6,9 @@ Thanks for checking things out! Here are a couple of things that you might be pa
 - [A design diagram describing the high-level AI architecture](Design.png)
 - [The fully commented AI code (written in Haskell)](src/AI.hs)
 
+## Want to play against my AI?
+An interactive game can be started by via `stack exec dominos`
+
 ## Miscellaneous Notes
 Should I replace `pure` with `return`?
 
